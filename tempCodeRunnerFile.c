@@ -1,1 +1,1 @@
-    // disp(&g);
+printPath(parent, i);

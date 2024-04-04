@@ -47,90 +47,74 @@ void disp(graph* g){
 
 #define V 17 
  
-int minDistance(int dist[], bool sptSet[])
-{
-    // Initialize min value
+int minDistance(int dist[], int sptSet[]) {
     int min = INT_MAX, min_index;
- 
-    for (int v = 0; v < V; v++)
-        if (sptSet[v] == false && dist[v] <= min){
-            min = dist[v], min_index = v;
-            printf("%s--",areas[v]);
+    for (int v = 0; v < V; v++) {
+        if (sptSet[v] == 0 && dist[v] <= min) {
+            min = dist[v];
+            min_index = v;
         }
+    }
     return min_index;
 }
-// A utility function to print the constructed distance
-// array
-void printSolution(int dist[])
-{   
-    printf("\n");
-    // printf("Vertex \t\t Distance from Source\n");
-    for (int i = 0; i < V; i++)
-        printf("%s \t\t\t\t %d\n", areas[i], dist[i]);
 
+// Function to print the path from source to j
+void printPath(int parent[], int j) {
+    if (parent[j] == -1)
+        return;
+    printPath(parent, parent[j]);
+    printf(" -> %s", areas[j]);
 }
- 
-// Function that implements Dijkstra's single source
-// shortest path algorithm for a graph represented using
-// adjacency matrix representation
-void dijkstra(node** graph, int src)
-{
-    int dist[V]; // The output array.  dist[i] will hold the
-                 // shortest
-    // distance from src to i
- 
-    bool sptSet[V]; // sptSet[i] will be true if vertex i is
-                    // included in shortest
-    // path tree or shortest distance from src to i is
-    // finalized
- 
-    // Initialize all distances as INFINITE and stpSet[] as
-    // false
-    for (int i = 0; i < V; i++)
-        dist[i] = INT_MAX, sptSet[i] = false;
- 
+
+// Function to print the distance array
+void printSolution(int dist[], int parent[], int src, int dest) {
+    printf("Shortest Path from %s to %s: %d\nPath: %s", areas[src], areas[dest], dist[dest], areas[src]);
+    printPath(parent, dest);
+    printf("\n");
+}
+
+// Function to implement Dijkstra's algorithm for a given graph
+void dijkstra(node** graph, int src, int dest) {
+    int dist[V]; // The output array dist[i] holds the shortest distance from src to i
+    int parent[V]; // Array to store shortest path tree
+    int sptSet[V]; // sptSet[i] will be true if vertex i is included in the shortest path tree or the shortest distance from src to i is finalized
+
+    // Initialize all distances as INFINITE and sptSet[] as false
+    for (int i = 0; i < V; i++) {
+        dist[i] = INT_MAX;
+        sptSet[i] = 0;
+        parent[i] = -1;
+    }
+
     // Distance of source vertex from itself is always 0
     dist[src] = 0;
- 
+
     // Find shortest path for all vertices
     for (int count = 0; count < V - 1; count++) {
-        // Pick the minimum distance vertex from the set of
-        // vertices not yet processed. u is always equal to
-        // src in the first iteration.
+        // Pick the minimum distance vertex from the set of vertices not yet processed
         int u = minDistance(dist, sptSet);
- 
+
         // Mark the picked vertex as processed
-        sptSet[u] = true;
- 
-        // Update dist value of the adjacent vertices of the
-        // picked vertex.
-        for (int v = 0; v < V; v++){
-            if (!sptSet[v] && graph[u][v].distance
-                && dist[u] != INT_MAX
-                && dist[u] + graph[u][v].distance < dist[v]){
-                    dist[v] = dist[u] + graph[u][v].distance;
-                    
-                }
-                // printf("%s--\n",areas[u]);
+        sptSet[u] = 1;
+
+        // Update dist value of the adjacent vertices of the picked vertex
+        for (int v = 0; v < V; v++) {
+            if (!sptSet[v] && graph[u][v].distance && dist[u] + graph[u][v].distance < dist[v]) {
+                parent[v] = u;
+                dist[v] = dist[u] + graph[u][v].distance;
+            }
         }
- 
-            // Update dist[v] only if is not in sptSet,
-            // there is an edge from u to v, and total
-            // weight of path from src to  v through u is
-            // smaller than current value of dist[v]
-            
-                
     }
- 
-    // print the constructed distance array
-    printSolution(dist);
+
+    // Print the distance array and the shortest path
+    printSolution(dist, parent, src, dest);
 }
 
 int main(){
     graph g;
     initgraph(&g);
     // disp(&g);
-    dijkstra(g.matrix,0);
+    dijkstra(g.matrix,11,0);
     return 0;
 }
 
