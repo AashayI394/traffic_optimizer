@@ -2,8 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-#include<limits.h>
-
+#include <limits.h>
 
 char* areas[17]={"Balewadi","Baner","Sppu","Bavdhan","Pashan","Kothrud","Dhayari","Rajaram Bridge","PMC","Dandekar Bridge","Katraj","Bibwewadi","Swargate","Kondhwa","Koregaon Park","Camp","COEP"};
 
@@ -46,7 +45,7 @@ void disp(graph* g){
 }
 
 #define V 17 
- 
+
 int minDistance(int dist[], int sptSet[]) {
     int min = INT_MAX, min_index;
     for (int v = 0; v < V; v++) {
@@ -59,22 +58,54 @@ int minDistance(int dist[], int sptSet[]) {
 }
 
 // Function to print the path from source to j
-void printPath(int parent[], int j) {
-    if (parent[j] == -1)
+// Function to print the path from source to j
+// Function to print the path from source to j
+// Function to print the path from source to j
+// Function to print the path from source to j
+void printPath(int parent[], int j, int dist, node** graph, int d) {
+    if (parent[j] == -1) {
+        // Print the vertex for the initial node
+        printf("%s", areas[j]);
         return;
-    printPath(parent, parent[j]);
-    printf(" -> %s", areas[j]);
+    }
+
+    printPath(parent, parent[j], graph[parent[j]][j].distance, graph, d);
+
+    // Determine the color based on distance between adjacent vertices
+    if (parent[j] != d) { // Avoid printing "->" after reaching the destination
+        int parentDist = graph[parent[j]][j].distance;
+        if (parentDist < 4)
+            printf("\033[0;34m");  // Blue color
+        else if (parentDist >= 4 && parentDist <= 7)
+            printf("\033[0;33m");  // Yellow color
+        else
+            printf("\033[0;31m");  // Red color
+        printf(" --> \033[0m");  // Reset color
+    }
+
+    // Print the vertex
+    if (dist < 4)
+        printf("%s", areas[j]);
+    else if (dist >= 4 && dist <= 7)
+        printf("%s", areas[j]);
+    else
+        printf("%s", areas[j]);
 }
 
+
+
+
+
 // Function to print the distance array
-void printSolution(int dist[], int parent[], int src, int dest) {
-    printf("Shortest Path from %s to %s: %d\nPath: %s", areas[src], areas[dest], dist[dest], areas[src]);
-    printPath(parent, dest);
+void printSolution(int dist[], int parent[], int src, int dest,node** graph,int d) {
+    printf("Shortest Path from %s to %s: %d\nPath: ", areas[src], areas[dest], dist[dest]);
+    printPath(parent, dest, dist[dest], graph,d); // Pass the graph parameter correctly
     printf("\n");
 }
 
 // Function to implement Dijkstra's algorithm for a given graph
 void dijkstra(node** graph, int src, int dest) {
+    int d=dest;
     int dist[V]; // The output array dist[i] holds the shortest distance from src to i
     int parent[V]; // Array to store shortest path tree
     int sptSet[V]; // sptSet[i] will be true if vertex i is included in the shortest path tree or the shortest distance from src to i is finalized
@@ -99,7 +130,7 @@ void dijkstra(node** graph, int src, int dest) {
 
         // Update dist value of the adjacent vertices of the picked vertex
         for (int v = 0; v < V; v++) {
-            if (!sptSet[v] && graph[u][v].distance && dist[u] + graph[u][v].distance < dist[v]) {
+            if (!sptSet[v] && graph[u][v].distance != 0 && dist[u] + graph[u][v].distance < dist[v]) {
                 parent[v] = u;
                 dist[v] = dist[u] + graph[u][v].distance;
             }
@@ -107,7 +138,7 @@ void dijkstra(node** graph, int src, int dest) {
     }
 
     // Print the distance array and the shortest path
-    printSolution(dist, parent, src, dest);
+    printSolution(dist, parent, src, dest,graph,d);
 }
 
 int main(){
@@ -117,9 +148,3 @@ int main(){
     dijkstra(g.matrix,11,0);
     return 0;
 }
-
-
-
-
-
-
