@@ -9,6 +9,7 @@ char* areas[17]={"Balewadi","Baner","Sppu","Bavdhan","Pashan","Kothrud","Dhayari
 typedef struct node{
     int distance;
     int intensity;
+    int factor;
 }node;
 
 typedef struct graph{
@@ -23,7 +24,6 @@ void initgraph(graph* g){
     for(int i=0;i<17;i++){
         for(int j=0;j<17;j++){
             g->matrix[i][j].distance=0;
-            g->matrix[i][j].intensity=-1;
         }
     }
     FILE* fp=fopen("matrix.txt","r");
@@ -35,12 +35,56 @@ void initgraph(graph* g){
     }
 }
 
+void time(int hr,int min,graph* g){
+    if(min>30){
+        hr++;
+    }
+    int timematrix[17][17][24];
+    FILE* fp=fopen("time.txt","r");
+    int s,d;
+    for(int i=0;i<29;i++){
+        fscanf(fp,"%d%d",&s,&d);
+        // printf("%d %d\n",s,d);
+        for(int j=0;j<24;j++){
+            if(j<8 || j>20){
+                timematrix[s][d][j]=1;
+                timematrix[d][s][j]=1;
+            }
+            else{
+                int x;
+                fscanf(fp,"%d",&x);
+                // printf("%d ",x);
+                timematrix[s][d][j]=x;
+                timematrix[d][s][j]=x;
+            }
+        }
+        //printf("\n");
+    }
+    for(int i=0;i<17;i++){
+        for(int j=0;j<17;j++){
+            if(i!=j){
+                g->matrix[i][j].intensity=timematrix[i][j][hr];
+                g->matrix[j][i].intensity=timematrix[j][i][hr];
+            }
+        }
+    }
+    for(int i=0;i<17;i++){
+        for(int j=0;j<17;j++){
+            g->matrix[i][j].factor=g->matrix[i][j].distance*g->matrix[i][j].intensity;
+            g->matrix[j][i].factor=g->matrix[j][i].distance*g->matrix[j][i].intensity;
+        }
+    }
+}
+
+
+
 void disp(graph* g){
     for(int i=0;i<17;i++){
         for(int j=0;j<17;j++){
             if(i!=j && g->matrix[i][j].distance!=0)
-                printf("source-%s dest-%s dist-%d\n",areas[i],areas[j],g->matrix[i][j].distance);
+                printf("%d ",g->matrix[i][j].intensity);
         }
+        printf("\n");
     }
 }
 
@@ -69,11 +113,11 @@ void printPath(int parent[], int j, int dist, node** graph, int d) {
         return;
     }
 
-    printPath(parent, parent[j], graph[parent[j]][j].distance, graph, d);
+    printPath(parent, parent[j], graph[parent[j]][j].factor, graph, d);
 
     // Determine the color based on distance between adjacent vertices
     if (parent[j] != d) { // Avoid printing "->" after reaching the destination
-        int parentDist = graph[parent[j]][j].distance;
+        int parentDist = graph[parent[j]][j].factor;
         if (parentDist < 4)
             printf("\033[0;34m");  // Blue color
         else if (parentDist >= 4 && parentDist <= 7)
@@ -130,9 +174,9 @@ void dijkstra(node** graph, int src, int dest) {
 
         // Update dist value of the adjacent vertices of the picked vertex
         for (int v = 0; v < V; v++) {
-            if (!sptSet[v] && graph[u][v].distance != 0 && dist[u] + graph[u][v].distance < dist[v]) {
+            if (!sptSet[v] && graph[u][v].factor != 0 && dist[u] + graph[u][v].factor < dist[v]) {
                 parent[v] = u;
-                dist[v] = dist[u] + graph[u][v].distance;
+                dist[v] = dist[u] + graph[u][v].factor;
             }
         }
     }
@@ -144,7 +188,10 @@ void dijkstra(node** graph, int src, int dest) {
 int main(){
     graph g;
     initgraph(&g);
+    time(16,0,&g);
     // disp(&g);
-    dijkstra(g.matrix,11,0);
+    dijkstra(g.matrix,6,0);
+    
+    //disp(&g);
     return 0;
 }
