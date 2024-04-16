@@ -245,6 +245,8 @@ void adjacent(graph g,int index,int d){
 
 void findroute(graph g,int s,int d){
      int sol[100];
+     int diffpath[30];
+
     for(int i=0; i<100; i++) {
         sol[i] = -1;
     }
@@ -256,9 +258,6 @@ void findroute(graph g,int s,int d){
     }
     rev(sol,ct);
     int i=0;
-    while(sol[i]!=-1) {
-        printf("%d ",sol[i++]);
-    }
     int c=1;
     i=1;
     while(c==1){
@@ -266,7 +265,7 @@ void findroute(graph g,int s,int d){
             printf("\nYOU HAVE REACHED YOUR DESTINATION\n");
             break;
         }
-        printf("Have You reached %s?(Y/N)\n",areas[sol[i++]]);
+        printf("Have You reached %s?(1 for Yes/0 for No)\n",areas[sol[i++]]);
         fflush(stdin);
         scanf("%d",&c);
         if(c==0){
@@ -287,6 +286,16 @@ int find_area_index(char s[]){
     return x;
 }
 
+int finddistance(graph* g, int sol[], int sindex, int dindex) {
+    int j=0;
+    int ans= g->matrix[sindex][sol[0]].distance;
+    while(sol[j+1]!=-1) {
+        ans+= g->matrix[sol[j]][sol[j+1]].distance;
+    }
+    ans+=g->matrix[sol[j]][dindex].distance;
+    return ans;
+}
+
 void journeyPlanning(graph* g) {
     int t=-1,min=-1;
     while(t<0 || t>=24 || (min<0 || min>60)){
@@ -301,16 +310,27 @@ void journeyPlanning(graph* g) {
     time1(t,min,g);
     char source[20], destination[20]; 
     int numStops;
-    printf("Enter source area:\n");
-    for (int i = 0; i < NUM_AREAS; i++) {
-        printf("%d. %s\n", i, areas[i]);
+
+     // Print AREAS text in bold
+    printf("\033[1m"); // Start bold text
+    printf("\t\t\t\tA R E A S\n\n");
+    printf("\033[0m"); // Reset text formatting
+// Print the table
+    for (int i = 0; i < 5; i++) {
+        printf("%-12s", areas[i]); // Printing elements from column 1
+        printf("\033[1;33m|\033[0m\t%-12s\t\033[1;33m|\033[0m", (i + 5 < 17) ? areas[i + 5] : ""); // Printing elements from column 2 or empty string if NULL
+        printf("\033[1;33m|\033[0m\t%-12s\t\033[1;33m|\033[0m", (i + 10 < 17) ? areas[i + 10] : ""); // Printing elements from column 3 or empty string if NULL
+        printf("\033[1;33m|\033[0m\t%-12s\t\033[1;33m|\033[0m", (i + 15 < 17) ? areas[i + 15] : ""); // Printing elements from column 4 or empty string if NULL
+        printf("\n");
     }
-    scanf("%s", &source);
+
+    printf("\nEnter source area:\n");
+    scanf("%s", source);
     printf("Enter destination area:\n");
-    for (int i = 0; i < NUM_AREAS; i++) {
-        printf("%d. %s\n", i, areas[i]);
-    }
-    scanf("%s", &destination);
+    
+
+
+    scanf("%s", destination);
     int sindex = find_area_index(source);
     int dindex = find_area_index(destination);
     printf("Enter number of stops between source and destination:\n");
@@ -353,62 +373,44 @@ void journeyPlanning(graph* g) {
     int stops[numStops];
     printf("Enter the areas for stops:\n");
     for (int i = 0; i < numStops; i++) {
-        scanf("%d", &stops[i]);
+        char stopname[20];
+        scanf("%s", stopname);
+        stops[i] = find_area_index(stopname);
+    }
+    int sol[100];
+    for(int i=0; i<100; i++) {
+        sol[i]=-1;
     }
 
-    int currentLocation = find_area_index(source);
-    for (int i = 0; i < numStops; i++) {
+    printf("\nHERE IS YOUR ENTIRE PATH: \n");
+    dijkstra(g->matrix,sindex,stops[0],sol);
+    int j=0;
+    int distvar=0;
+    distvar+= finddistance(g,sol,sindex,sol[0]);
+    for(int i=0; i<numStops-1; i++) {
+        dijkstra(g->matrix,stops[i],stops[i+1],sol);
+        distvar+= finddistance(g,sol,stops[i],stops[i+1]);
+    }
+
+    dijkstra(g->matrix,stops[numStops-1],dindex,sol);
+    printf("\n");
+    printf("Enter 1 to start the journey! \n");
+    int choice;
+    scanf("%d",&choice);
+    if(choice==1) {
+        int currentLocation = find_area_index(source);
+        for (int i = 0; i < numStops; i++) {
         //dijkstra(g->matrix, currentLocation, stops[i]);
         findroute(*g,currentLocation,stops[i]);
-        // Check if user has reached the stop
-        /*bool reachedStop = false;
-        while (!reachedStop) {
-            printf("Have you reached the stop at %s? (Y/N)\n", areas[stops[i]]);
-            char choice;
-            scanf(" %c", &choice);
-            if (choice == 'Y' || choice == 'y') {
-                reachedStop = true;
-            } else if (choice == 'N' || choice == 'n') {
-                printf("Where are you now? (Enter area number)\n");
-                for (int j = 0; j < NUM_AREAS; j++) {
-                    printf("%d. %s\n", j, areas[j]);
-                }
-                scanf("%d", &currentLocation);
-
-                // Re-route from the current location to the same stop
-                dijkstra(g->matrix, currentLocation, stops[i]);
-            } else {
-                printf("Invalid choice. Please enter Y or N.\n");
-            }
-        }*/
-
-        // Update current location after reaching the stop
+        
         currentLocation = stops[i];
-    }
-    findroute(*g,stops[numStops-1],dindex);
-    // Check if user has reached the final destination
-    /*bool reachedDestination = false;
-    while (!reachedDestination) {
-        printf("Have you reached the final destination at %s? (Y/N)\n", areas[destination]);
-        char choice;
-        scanf(" %c", &choice);
-        if (choice == 'Y' || choice == 'y') {
-            reachedDestination = true;
-        } else if (choice == 'N' || choice == 'n') {
-            printf("Where are you now? (Enter area number)\n");
-            for (int j = 0; j < NUM_AREAS; j++) {
-                printf("%d. %s\n", j, areas[j]);
-            }
-            scanf("%d", &source);
-
-            // Re-route from the current location to the destination
-            int sol[]
-            dijkstra(g->matrix, source, destination);
-        } else {
-            printf("Invalid choice. Please enter Y or N.\n");
         }
-    }*/
+        findroute(*g,stops[numStops-1],dindex);
+    }
+    else return;
+    
 }
+
 
 int main(){
     graph g;
@@ -466,8 +468,8 @@ int main(){
                 time1(t,min,&g);
                 // disp(&g);
                 int sol[100];
-                findroute(g,x,y);
-            }
+                dijkstra((g.matrix), x,y,sol);
+                }
         }
         if(c==3){
 
