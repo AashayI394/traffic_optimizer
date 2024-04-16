@@ -140,53 +140,53 @@ void printPath(int parent[], int j, int dist, node** graph, int d, int dist1[]) 
 }
 
 // Print the shortest path
-void printSolution(int dist[], int parent[], int src, int dest, node** graph, int d, int path[]) {
-    printf("Shortest Path from %s to %s: %d\nPath: ", areas[src], areas[dest], path[dest]);
-    printPath(parent, dest, dist[dest], graph, d, path);
-    printf("\n");
-}
+// void printSolution(int dist[], int parent[], int src, int dest, node** graph, int d, int path[]) {
+//     printf("Shortest Path from %s to %s: %d\nPath: ", areas[src], areas[dest], path[dest]);
+//     printPath(parent, dest, dist[dest], graph, d, path);
+//     printf("\n");
+// }
 
 // Implement Dijkstra's algorithm
-void dijkstra(node** graph, int src, int dest) {
-    int dist[NUM_AREAS];
-    int parent[NUM_AREAS];
-    int sptSet[NUM_AREAS];
-    int path[NUM_AREAS];
-    for (int i = 0; i < NUM_AREAS; i++) {
-        dist[i] = INT_MAX;
-        path[i] = INT_MAX;
-        sptSet[i] = 0;
-        parent[i] = -1;
-    }
+// void dijkstra(node** graph, int src, int dest) {
+//     int dist[NUM_AREAS];
+//     int parent[NUM_AREAS];
+//     int sptSet[NUM_AREAS];
+//     int path[NUM_AREAS];
+//     for (int i = 0; i < NUM_AREAS; i++) {
+//         dist[i] = INT_MAX;
+//         path[i] = INT_MAX;
+//         sptSet[i] = 0;
+//         parent[i] = -1;
+//     }
 
-    dist[src] = 0;
-    path[src] = 0;
-    for (int count = 0; count < NUM_AREAS - 1; count++) {
-        int u = minDistance(dist, sptSet);
-        sptSet[u] = 1;
-        for (int v = 0; v < NUM_AREAS; v++) {
-            if (!sptSet[v] && graph[u][v].distance != 0 && dist[u] + graph[u][v].factor < dist[v]) {
-                parent[v] = u;
-                dist[v] = dist[u] + graph[u][v].factor;
-                path[v] = path[u] + graph[u][v].distance;
-            }
-        }
-    }
+//     dist[src] = 0;
+//     path[src] = 0;
+//     for (int count = 0; count < NUM_AREAS - 1; count++) {
+//         int u = minDistance(dist, sptSet);
+//         sptSet[u] = 1;
+//         for (int v = 0; v < NUM_AREAS; v++) {
+//             if (!sptSet[v] && graph[u][v].distance != 0 && dist[u] + graph[u][v].factor < dist[v]) {
+//                 parent[v] = u;
+//                 dist[v] = dist[u] + graph[u][v].factor;
+//                 path[v] = path[u] + graph[u][v].distance;
+//             }
+//         }
+//     }
 
-    printSolution(dist, parent, src, dest, graph, dest, path);
-}
+//     printSolution(dist, parent, src, dest, graph, dest, path);
+// }
 
-// Function to plan a journey with stops
-// Function to plan a journey with stops and re-routing
-// Function to plan a journey with stops and re-routing
-// Function to plan a journey with stops and re-routing
-// Function to plan a journey with stops and re-routing
-// Function to plan a journey with stops and re-routing
-// Function to plan a journey with stops and re-routing
-// Function to plan a journey with stops and re-routing
-// Function to plan a journey with stops and re-routing
-// Function to plan a journey with stops and re-routing
-// Function to plan a journey with stops and re-routing
+// // Function to plan a journey with stops
+// // Function to plan a journey with stops and re-routing
+// // Function to plan a journey with stops and re-routing
+// // Function to plan a journey with stops and re-routing
+// // Function to plan a journey with stops and re-routing
+// // Function to plan a journey with stops and re-routing
+// // Function to plan a journey with stops and re-routing
+// // Function to plan a journey with stops and re-routing
+// // Function to plan a journey with stops and re-routing
+// // Function to plan a journey with stops and re-routing
+// // Function to plan a journey with stops and re-routing
 void journeyPlanning(graph* g) {
     int source, destination, numStops;
     printf("Enter source area:\n");

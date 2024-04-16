@@ -4,6 +4,7 @@
 #include <string.h>
 #include <limits.h>
 #include <unistd.h>
+#define NUM_AREAS 17
 // enum ar{
 //     Balewadi,Baner,Sppu,Bavdhan,Pashan,Kothrud,Dhayari,Rajaram_Bridge,PMC,Dandekar_Bridge,Katraj,Bibwewadi,Swargate,Kondhwa,Koregaon_Park,Camp,COEP
 // };
@@ -124,17 +125,6 @@ void printPath(int parent[], int j, int dist, node** graph, int d,int dist1[], i
         int parentDist = graph[parent[j]][j].factor;
         if (graph[parent[j]][j].intensity <= 2){
             printf("\x1b[1;34m--%d-->\x1b[0m",dist1[j]-dist1[parent[j]]);
-<<<<<<< Updated upstream
-            //sleep(1);
-        }
-        else if (graph[parent[j]][j].intensity>=3 && graph[parent[j]][j].intensity <= 4){
-            printf("\x1b[1;33m--%d-->\x1b[0m",dist1[j]-dist1[parent[j]]);
-            //sleep(2);
-        }
-        else{
-            printf("\x1b[1;31m--%d-->\x1b[0m",dist1[j]-dist1[parent[j]]);
-            //sleep(3);
-=======
             // sleep(1);
         }
         else if (graph[parent[j]][j].intensity>=3 && graph[parent[j]][j].intensity <= 4){
@@ -144,7 +134,6 @@ void printPath(int parent[], int j, int dist, node** graph, int d,int dist1[], i
         else{
             printf("\x1b[1;31m--%d-->\x1b[0m",dist1[j]-dist1[parent[j]]);
             // sleep(3);
->>>>>>> Stashed changes
         }
             // Reset color
     }
@@ -298,10 +287,132 @@ int find_area_index(char s[]){
     return x;
 }
 
+void journeyPlanning(graph* g) {
+    int t=-1,min=-1;
+    while(t<0 || t>=24 || (min<0 || min>60)){
+            printf("ENTER HOUR OF THE DAY IN 24 HOUR FORMAT(0-23)\n");
+            scanf("%d",&t);
+            printf("ENTER MINUTE OF THE DAY(0-60)\n");
+            scanf("%d",&min);
+            if(t<0 || t>=24 || min<0 || min>60){
+                printf("ENTER VALID TIME IN 24 HOUR FORMAT\n");
+            }
+    }
+    time1(t,min,g);
+    char source[20], destination[20]; 
+    int numStops;
+    printf("Enter source area:\n");
+    for (int i = 0; i < NUM_AREAS; i++) {
+        printf("%d. %s\n", i, areas[i]);
+    }
+    scanf("%s", &source);
+    printf("Enter destination area:\n");
+    for (int i = 0; i < NUM_AREAS; i++) {
+        printf("%d. %s\n", i, areas[i]);
+    }
+    scanf("%s", &destination);
+    int sindex = find_area_index(source);
+    int dindex = find_area_index(destination);
+    printf("Enter number of stops between source and destination:\n");
+    scanf("%d", &numStops);
+
+    if (sindex < 0 || sindex >= NUM_AREAS || dindex < 0 || dindex >= NUM_AREAS) {
+        printf("Invalid source or destination area.\n");
+        return;
+    }
+
+    if (numStops == 0) {
+        // If no stops, calculate path directly from source to destination
+        findroute(*g,find_area_index(source),find_area_index(destination));
+        //dijkstra(g->matrix, source, destination);
+
+        // Check if user has reached the final destination
+        /*bool reachedDestination = false;
+        while (!reachedDestination) {
+            printf("Have you reached the final destination at %s? (Y/N)\n", areas[destination]);
+            char choice;
+            scanf(" %c", &choice);
+            if (choice == 'Y' || choice == 'y') {
+                reachedDestination = true;
+            } else if (choice == 'N' || choice == 'n') {
+                printf("Where are you now? (Enter area number)\n");
+                for (int j = 0; j < NUM_AREAS; j++) {
+                    printf("%d. %s\n", j, areas[j]);
+                }
+                scanf("%d", &source);
+
+                // Re-route from the current location to the destination
+                dijkstra(g->matrix, source, destination);
+            } else {
+                printf("Invalid choice. Please enter Y or N.\n");
+            }
+        }*/
+        return;
+    }
+
+    int stops[numStops];
+    printf("Enter the areas for stops:\n");
+    for (int i = 0; i < numStops; i++) {
+        scanf("%d", &stops[i]);
+    }
+
+    int currentLocation = find_area_index(source);
+    for (int i = 0; i < numStops; i++) {
+        //dijkstra(g->matrix, currentLocation, stops[i]);
+        findroute(*g,currentLocation,stops[i]);
+        // Check if user has reached the stop
+        /*bool reachedStop = false;
+        while (!reachedStop) {
+            printf("Have you reached the stop at %s? (Y/N)\n", areas[stops[i]]);
+            char choice;
+            scanf(" %c", &choice);
+            if (choice == 'Y' || choice == 'y') {
+                reachedStop = true;
+            } else if (choice == 'N' || choice == 'n') {
+                printf("Where are you now? (Enter area number)\n");
+                for (int j = 0; j < NUM_AREAS; j++) {
+                    printf("%d. %s\n", j, areas[j]);
+                }
+                scanf("%d", &currentLocation);
+
+                // Re-route from the current location to the same stop
+                dijkstra(g->matrix, currentLocation, stops[i]);
+            } else {
+                printf("Invalid choice. Please enter Y or N.\n");
+            }
+        }*/
+
+        // Update current location after reaching the stop
+        currentLocation = stops[i];
+    }
+    findroute(*g,stops[numStops-1],dindex);
+    // Check if user has reached the final destination
+    /*bool reachedDestination = false;
+    while (!reachedDestination) {
+        printf("Have you reached the final destination at %s? (Y/N)\n", areas[destination]);
+        char choice;
+        scanf(" %c", &choice);
+        if (choice == 'Y' || choice == 'y') {
+            reachedDestination = true;
+        } else if (choice == 'N' || choice == 'n') {
+            printf("Where are you now? (Enter area number)\n");
+            for (int j = 0; j < NUM_AREAS; j++) {
+                printf("%d. %s\n", j, areas[j]);
+            }
+            scanf("%d", &source);
+
+            // Re-route from the current location to the destination
+            int sol[]
+            dijkstra(g->matrix, source, destination);
+        } else {
+            printf("Invalid choice. Please enter Y or N.\n");
+        }
+    }*/
+}
+
 int main(){
     graph g;
     initgraph(&g);
-<<<<<<< Updated upstream
     printf("\n\n\t\tWELCOME TO TRAFFIC AND ROAD NAVIGATOR\n\n");
     while(1){
         
@@ -346,7 +457,7 @@ int main(){
                 while(t<0 || t>=24 || (min<0 || min>60)){
                     printf("ENTER HOUR OF THE DAY IN 24 HOUR FORMAT(0-23)\n");
                     scanf("%d",&t);
-                    printf("ENTER MINUTE OF THE DAY IN 24 HOUR FORMAT(0-23)\n");
+                    printf("ENTER MINUTE OF THE DAY(0-60)\n");
                     scanf("%d",&min);
                     if(t<0 || t>=24 || min<0 || min>60){
                         printf("ENTER VALID TIME IN 24 HOUR FORMAT\n");
@@ -354,19 +465,19 @@ int main(){
                 }
                 time1(t,min,&g);
                 // disp(&g);
-                dijkstra(g.matrix,x,y);
+                int sol[100];
+                findroute(g,x,y);
             }
+        }
+        if(c==3){
+
+            journeyPlanning(&g);
         }
         if(c==4){
             break;
         }
     }
     
-=======
-    time1(16,0,&g);
-    findroute(g,11,0);
-    // disp(&g);
->>>>>>> Stashed changes
     
     return 0;
 }
