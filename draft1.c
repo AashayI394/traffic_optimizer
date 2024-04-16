@@ -4,7 +4,9 @@
 #include <string.h>
 #include <limits.h>
 #include <unistd.h>
-
+// enum ar{
+//     Balewadi,Baner,Sppu,Bavdhan,Pashan,Kothrud,Dhayari,Rajaram_Bridge,PMC,Dandekar_Bridge,Katraj,Bibwewadi,Swargate,Kondhwa,Koregaon_Park,Camp,COEP
+// };
 char* areas[17]={"Balewadi","Baner","Sppu","Bavdhan","Pashan","Kothrud","Dhayari","Rajaram Bridge","PMC","Dandekar Bridge","Katraj","Bibwewadi","Swargate","Kondhwa","Koregaon Park","Camp","COEP"};
 
 typedef struct node{
@@ -121,15 +123,15 @@ void printPath(int parent[], int j, int dist, node** graph, int d,int dist1[]) {
         int parentDist = graph[parent[j]][j].factor;
         if (graph[parent[j]][j].intensity < 2){
             printf("\x1b[1;34m--%d-->\x1b[0m",dist1[j]-dist1[parent[j]]);
-            sleep(1);
+            //sleep(1);
         }
         else if (graph[parent[j]][j].intensity>=3 && graph[parent[j]][j].intensity <= 4){
             printf("\x1b[1;33m--%d-->\x1b[0m",dist1[j]-dist1[parent[j]]);
-            sleep(2);
+            //sleep(2);
         }
         else{
             printf("\x1b[1;31m--%d-->\x1b[0m",dist1[j]-dist1[parent[j]]);
-            sleep(3);
+            //sleep(3);
         }
             // Reset color
     }
@@ -191,12 +193,79 @@ void dijkstra(node** graph, int src, int dest) {
     printSolution(dist, parent, src,dest,graph,dest,path);
 }
 
+int find_area_index(char s[]){
+    int x=-1;
+    for(int i=0;i<17;i++){
+        if(!strcmp(areas[i],s)){
+            x=i;
+        }
+    }
+    return x;
+}
+
 int main(){
     graph g;
     initgraph(&g);
-    time1(16,0,&g);
-    // disp(&g);
-    dijkstra(g.matrix,11,0);
+    printf("\n\n\t\tWELCOME TO TRAFFIC AND ROAD NAVIGATOR\n\n");
+    while(1){
+        
+        printf("1\tSHOW AREAS\n");
+        printf("2\tFIND ROUTE\n");
+        printf("3\tJOURNEY PLANNER\n");
+        printf("4\tEXIT\n");
+        int c;
+        printf("ENTER CHOICE\n");
+        scanf("%d",&c);
+        if(c==1){
+            // Print AREAS text in bold
+            printf("\033[1m"); // Start bold text
+            printf("\t\t\t\tA R E A S\n\n");
+            printf("\033[0m"); // Reset text formatting
+    // Print the table
+            for (int i = 0; i < 5; i++) {
+                printf("%-12s", areas[i]); // Printing elements from column 1
+                printf("\033[1;33m|\033[0m\t%-12s\t\033[1;33m|\033[0m", (i + 5 < 17) ? areas[i + 5] : ""); // Printing elements from column 2 or empty string if NULL
+                printf("\033[1;33m|\033[0m\t%-12s\t\033[1;33m|\033[0m", (i + 10 < 17) ? areas[i + 10] : ""); // Printing elements from column 3 or empty string if NULL
+                printf("\033[1;33m|\033[0m\t%-12s\t\033[1;33m|\033[0m", (i + 15 < 17) ? areas[i + 15] : ""); // Printing elements from column 4 or empty string if NULL
+                printf("\n");
+            }
+        }
+        if(c==2){
+            char source[100];
+            char dest[100];
+            printf("ENTER SOURCE:-");
+            scanf("%s",source);
+            printf("ENTER DESTINATION:-");
+            scanf("%s",dest);
+            int x=-1,y=-1;
+            x=find_area_index(source);
+            y=find_area_index(dest);
+            //printf("%d %d\n",x,y);
+            if(x==-1 || y==-1){
+                printf("Sorry! This app does not support the area that you mentioned\n");
+            }
+            else{
+                int t=-1;
+                int min=-1;
+                while(t<0 || t>=24 || (min<0 || min>60)){
+                    printf("ENTER HOUR OF THE DAY IN 24 HOUR FORMAT(0-23)\n");
+                    scanf("%d",&t);
+                    printf("ENTER MINUTE OF THE DAY IN 24 HOUR FORMAT(0-23)\n");
+                    scanf("%d",&min);
+                    if(t<0 || t>=24 || min<0 || min>60){
+                        printf("ENTER VALID TIME IN 24 HOUR FORMAT\n");
+                    }
+                }
+                time1(t,min,&g);
+                // disp(&g);
+                dijkstra(g.matrix,x,y);
+            }
+        }
+        if(c==4){
+            break;
+        }
+    }
+    
     
     //disp(&g);
     return 0;
