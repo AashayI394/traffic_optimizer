@@ -109,20 +109,22 @@ int minDistance(int dist[], int sptSet[]) {
 // Function to print the path from source to j
 // Function to print the path from source to j
 // Function to print the path from source to j
-void printPath(int parent[], int j, int dist, node** graph, int d,int dist1[]) {
+void printPath(int parent[], int j, int dist, node** graph, int d,int dist1[], int* sol, int index) {
     if (parent[j] == -1) {
         // Print the vertex for the initial node
         printf(" %s ", areas[j]);
+        sol[index++] = j;
         return;
     }
 
-    printPath(parent, parent[j], graph[parent[j]][j].factor, graph, d,dist1);
+    printPath(parent, parent[j], graph[parent[j]][j].factor, graph, d,dist1,sol,index+1);
 
     // Determine the color based on distance between adjacent vertices
     if (parent[j] != d) { // Avoid printing "->" after reaching the destination
         int parentDist = graph[parent[j]][j].factor;
-        if (graph[parent[j]][j].intensity < 2){
+        if (graph[parent[j]][j].intensity <= 2){
             printf("\x1b[1;34m--%d-->\x1b[0m",dist1[j]-dist1[parent[j]]);
+<<<<<<< Updated upstream
             //sleep(1);
         }
         else if (graph[parent[j]][j].intensity>=3 && graph[parent[j]][j].intensity <= 4){
@@ -132,6 +134,17 @@ void printPath(int parent[], int j, int dist, node** graph, int d,int dist1[]) {
         else{
             printf("\x1b[1;31m--%d-->\x1b[0m",dist1[j]-dist1[parent[j]]);
             //sleep(3);
+=======
+            // sleep(1);
+        }
+        else if (graph[parent[j]][j].intensity>=3 && graph[parent[j]][j].intensity <= 4){
+            printf("\x1b[1;33m--%d-->\x1b[0m",dist1[j]-dist1[parent[j]]);
+            // sleep(2);
+        }
+        else{
+            printf("\x1b[1;31m--%d-->\x1b[0m",dist1[j]-dist1[parent[j]]);
+            // sleep(3);
+>>>>>>> Stashed changes
         }
             // Reset color
     }
@@ -140,6 +153,7 @@ void printPath(int parent[], int j, int dist, node** graph, int d,int dist1[]) {
       //  printf("%d ",dist1[j]-dist1[parent[j]]);
         
         printf(" %s ", areas[j]);
+        sol[index] = j;
         
 }
 
@@ -148,14 +162,14 @@ void printPath(int parent[], int j, int dist, node** graph, int d,int dist1[]) {
 
 
 // Function to print the distance array
-void printSolution(int dist[], int parent[], int src, int dest,node** graph,int d,int path[]) {
+void printSolution(int dist[], int parent[], int src, int dest,node** graph,int d,int path[], int* sol) {
     printf("Shortest Path from %s to %s: %d\nPath: ", areas[src], areas[dest], path[dest]);
-    printPath(parent, dest, dist[dest], graph,d,path); // Pass the graph parameter correctly
+    printPath(parent, dest, dist[dest], graph,d,path, sol, 0); // Pass the graph parameter correctly
     printf("\n");
 }
 
 // Function to implement Dijkstra's algorithm for a given graph
-void dijkstra(node** graph, int src, int dest) {
+void dijkstra(node** graph, int src, int dest, int* sol) {
     int dist[V]; // The output array dist[i] holds the shortest distance from src to i
     int parent[V]; // Array to store shortest path tree
     int sptSet[V]; // sptSet[i] will be true if vertex i is included in the shortest path tree or the shortest distance from src to i is finalized
@@ -190,7 +204,88 @@ void dijkstra(node** graph, int src, int dest) {
     }
 
     // Print the distance array and the shortest path
-    printSolution(dist, parent, src,dest,graph,dest,path);
+    printSolution(dist, parent, src,dest,graph,dest,path,sol);
+}
+
+// void journery_planner(graph* g) {
+//     printf("\nHello! I am here to assist you with your journey!\n"); 
+//     printf("Enter the starting location: ");
+//     char s[50];
+//     scanf("%s",s);
+//     printf("\nEnter your destination: ");
+//     char d[50];
+//     scanf("%s,d");
+//     printf("\nDo you wish to add any more stops in between? Type 1 for Yes, 0 for No\n");
+//     int choice;
+//     scanf("%d",&choice);
+//     if(choice==0) {
+//         int srcindex = find_area_index(s);
+//         int destindex = find_area_index(d);
+//         dijkstra(g->matrix,srcindex, destindex);
+//     }
+// }
+
+void rev(int* arr,int ct){
+    int i=0;
+    int j=ct-1;
+    while(i<j){
+        int t=arr[i];
+        arr[i]=arr[j];
+        arr[j]=t;
+        i++;
+        j--;
+    }
+    return;
+}
+
+void findroute(graph g,int s,int d);
+
+void adjacent(graph g,int index,int d){
+    printf("PROBABLY YOU ARE IN THESE AREAS\n");
+    for(int i=0;i<17;i++){
+        if(g.matrix[i][index].distance){
+            printf("%s\t\t",areas[i]);
+        }
+    }
+    int s;
+    printf("Where are you\n");
+    scanf("%d",&s);
+    findroute(g,s,d);
+
+}
+
+void findroute(graph g,int s,int d){
+     int sol[100];
+    for(int i=0; i<100; i++) {
+        sol[i] = -1;
+    }
+    dijkstra(g.matrix,s,d,sol);
+    int ct=0;
+    printf("\n");
+    while(sol[ct]!=-1) {
+        ct++;
+    }
+    rev(sol,ct);
+    int i=0;
+    while(sol[i]!=-1) {
+        printf("%d ",sol[i++]);
+    }
+    int c=1;
+    i=1;
+    while(c==1){
+        if(i==ct){
+            printf("\nYOU HAVE REACHED YOUR DESTINATION\n");
+            break;
+        }
+        printf("Have You reached %s?(Y/N)\n",areas[sol[i++]]);
+        fflush(stdin);
+        scanf("%d",&c);
+        if(c==0){
+            adjacent(g,sol[i-1],d);
+            return;
+        }
+    }
+    //disp(&g);
 }
 
 int find_area_index(char s[]){
@@ -206,6 +301,7 @@ int find_area_index(char s[]){
 int main(){
     graph g;
     initgraph(&g);
+<<<<<<< Updated upstream
     printf("\n\n\t\tWELCOME TO TRAFFIC AND ROAD NAVIGATOR\n\n");
     while(1){
         
@@ -266,7 +362,11 @@ int main(){
         }
     }
     
+=======
+    time1(16,0,&g);
+    findroute(g,11,0);
+    // disp(&g);
+>>>>>>> Stashed changes
     
-    //disp(&g);
     return 0;
 }
