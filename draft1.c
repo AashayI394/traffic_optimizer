@@ -336,13 +336,23 @@ int finddistance(graph* g, int sol[], int sindex, int dindex) {
     int ans= g->matrix[sindex][sol[0]].distance;
     while(sol[j+1]!=-1) {
         //printf("HERE");
-        printf("ans=%d\n",ans);
+        //printf("ans=%d\n",ans);
         ans+= g->matrix[sol[j]][sol[j+1]].distance;
         j++;
     }
     ans+=g->matrix[sol[j]][dindex].distance;
     printf("ans=%d\n",ans);
     return ans;
+}
+
+int find_time(graph* g,int sol[],int sindex,int dindex,int *m,int* h){
+    eta(h,m,g->matrix[sindex][sol[0]].distance,g->matrix[sindex][sol[0]].factor);
+    int j=0;
+    while(sol[j+1]!=-1){
+        eta(h,m,g->matrix[sol[j]][sol[j+1]].distance,g->matrix[sol[j]][sol[j+1]].factor);
+        j++;
+    }
+    eta(h,m,g->matrix[sol[j]][dindex].distance,g->matrix[sol[j]][dindex].factor);
 }
 
 void journeyPlanning(graph* g) {
@@ -356,6 +366,7 @@ void journeyPlanning(graph* g) {
                 printf("ENTER VALID TIME IN 24 HOUR FORMAT\n");
             }
     }
+    int h=t,m=min;
     time1(t,min,g);
     char source[20], destination[20]; 
     int numStops;
@@ -417,6 +428,8 @@ void journeyPlanning(graph* g) {
     int j=0;
     int distvar=0;
     distvar+= finddistance(g,sol,sindex,stops[0]);
+    find_time(g,sol,sindex,stops[0],&t,&min);
+    printf("ETA=%d:%d\n",t,min);
     printf("TOTAL DISTANCE=%d\n",distvar);
     int k=0;
     while(sol[k]!=-1){
@@ -438,6 +451,7 @@ void journeyPlanning(graph* g) {
 
     dijkstra(g->matrix,stops[numStops-1],dindex,sol);
     distvar+= finddistance(g,sol,stops[numStops-1],dindex);
+    
     printf("TOTAL DISTANCE=%d\n",distvar);
 
 
@@ -503,7 +517,7 @@ int main(){
                 printf("\n");
             }
         }
-        if(c==2){
+        else if(c==2){
             char source[100];
             char dest[100];
             printf("ENTER SOURCE:-");
@@ -535,12 +549,15 @@ int main(){
                 dijkstra((g.matrix), x,y,sol);
                 }
         }
-        if(c==3){
+        else if(c==3){
 
             journeyPlanning(&g);
         }
-        if(c==4){
+        else if(c==4){
             break;
+        }
+        else{
+            printf("ENTER A VALID CHOICE(1-4)\n");
         }
     }
     
