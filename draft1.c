@@ -4,11 +4,12 @@
 #include <string.h>
 #include <limits.h>
 #include <unistd.h>
+#include <ctype.h>
 #define NUM_AREAS 17
 // enum ar{
 //     Balewadi,Baner,Sppu,Bavdhan,Pashan,Kothrud,Dhayari,Rajaram_Bridge,PMC,Dandekar_Bridge,Katraj,Bibwewadi,Swargate,Kondhwa,Koregaon_Park,Camp,COEP
 // };
-char* areas[17]={"Balewadi","Baner","Sppu","Bavdhan","Pashan","Kothrud","Dhayari","Rajaram_Bridge","PMC","Dandekar_Bridge","Katraj","Bibwewadi","Swargate","Kondhwa","Koregaon_Park","Camp","COEP"};
+char* areas[17]={"balewadi","baner","sppu","bavdhan","pashan","kothrud","dhayari","rajaram_bridge","pmc","dandekar_bridge","katraj","bibwewadi","swargate","kondhwa","koregaon_park","camp","coep"};
 
 typedef struct node{
     int distance;
@@ -24,6 +25,20 @@ typedef struct arr{
     int A[100];
     int length;
 }arr;
+
+void toLowerCase(char *str) {
+    while (*str) {
+        *str = tolower(*str);
+        str++;
+    }
+}
+
+void toupperCase(char *str) {
+    while (*str) {
+        *str = toupper(*str);
+        str++;
+    }
+}
 
 void initgraph(graph* g){
     g->matrix=(node**)malloc(sizeof(node*)*17);
@@ -102,7 +117,12 @@ void eta(int* h,int* m,int d,int factor)
 
     (*h)+=f;
     int t=f;
-    (*m)+=(f-t)*60;
+    float c=(f-t)*60;
+    int d1=c;
+    (*m)+=d1;
+    if(c-d1>0.5){
+        (*m)+=1;
+    }
     if((*m)>=60)
         {
             (*h)+=1;
@@ -270,6 +290,7 @@ void adjacent(graph g,int index,int d,arr* tpath, int msource){
     char s[100];
     printf("\nWhere are you\n");
     scanf("%s",s);
+    toLowerCase(s);
     tpath->A[tpath->length++]=find_area_index(s);
     findroute(g,find_area_index(s),d,tpath, msource);
 
@@ -382,7 +403,7 @@ int finddistance(graph* g, int sol[], int sindex, int dindex) {
         j++;
     }
     ans+=g->matrix[sol[j]][dindex].distance;
-    printf("ans=%d\n",ans);
+    //printf("ans=%d\n",ans);
     return ans;
 }
 
@@ -401,22 +422,24 @@ int find_time(graph* g,int sol[],int sindex,int dindex,int *h,int* m){
 
 void printtime(int h,int m) {
     if(m < 10) {
-        printf("\t%d : 0%d\t",h,m);
+        printf("(%d : 0%d)",h,m);
     }
-    else printf("\t%d : %d\t",h,m);
+    else printf("(%d : %d)",h,m);
 }
 
 void find_time1(graph* g,int sol[],int sindex,int dindex,int *h,int* m) {
     eta(h,m,g->matrix[sindex][sol[0]].distance,g->matrix[sindex][sol[0]].intensity);
+    printf(" ----> ");
     printtime(*h,*m);
     int j=0;
     while(sol[j+1]!=-1){
         eta(h,m,g->matrix[sol[j]][sol[j+1]].distance,g->matrix[sol[j]][sol[j+1]].intensity);
+        printf(" ----> ");
         printtime(*h,*m);
         j++;
     }
     eta(h,m,g->matrix[sol[j]][dindex].distance,g->matrix[sol[j]][dindex].intensity);
-    printtime(*h,*m);
+    //printtime(*h,*m);
 }
 
 // void printentirepath(int sol[],int f,int sindex,int dindex){
@@ -447,7 +470,9 @@ void journeyPlanning(graph* g) {
     printf("\033[0m"); // Reset text formatting
 // Print the table
     for (int i = 0; i < 5; i++) {
-        printf("%-12s", areas[i]); // Printing elements from column 1
+        char t[100];
+        strcpy(t,areas[i]);
+        printf("%-12s", toupperCase(t)); // Printing elements from column 1
         printf("\033[1;33m|\033[0m\t%-12s\t\033[1;33m|\033[0m", (i + 5 < 17) ? areas[i + 5] : ""); // Printing elements from column 2 or empty string if NULL
         printf("\033[1;33m|\033[0m\t%-12s\t\033[1;33m|\033[0m", (i + 10 < 17) ? areas[i + 10] : ""); // Printing elements from column 3 or empty string if NULL
         printf("\033[1;33m|\033[0m\t%-12s\t\033[1;33m|\033[0m", (i + 15 < 17) ? areas[i + 15] : ""); // Printing elements from column 4 or empty string if NULL
@@ -461,6 +486,8 @@ void journeyPlanning(graph* g) {
 
 
     scanf("%s", destination);
+    toLowerCase(source);
+    toLowerCase(destination);
     int sindex = find_area_index(source);
     int dindex = find_area_index(destination);
     printf("Enter number of stops between source and destination:\n");
@@ -477,7 +504,14 @@ void journeyPlanning(graph* g) {
     }
     if (numStops == 0) {
         findroute(*g,find_area_index(source),find_area_index(destination),&tpath, sindex);
-        
+        rev(tpath.A,tpath.length);
+        int x=finddistance(g,tpath.A,find_area_index(source),find_area_index(destination));
+        printtime(t,min);
+        find_time1(g,tpath.A,sindex,dindex,&t,&min);
+        printf("\nETA=");
+        printtime(t,min);
+        printf("\n");
+        printf("\nTOTAL DISTANCE=%d\n",x);
         return;
     }
 
@@ -486,6 +520,7 @@ void journeyPlanning(graph* g) {
     for (int i = 0; i < numStops; i++) {
         char stopname[20];
         scanf("%s", stopname);
+        toLowerCase(stopname);
         stops[i] = find_area_index(stopname);
     }
     int sol[100];
@@ -526,8 +561,6 @@ void journeyPlanning(graph* g) {
     find_time(g,sol,stops[numStops-1],dindex,&t,&min);
     printf("ETA=%d:%d\n",t,min);
     printf("TOTAL DISTANCE=%d\n",distvar);
-
-
     printf("\n");
     printf("Enter 1 to start the journey! \n");
     int choice;
@@ -601,6 +634,8 @@ int main(){
             scanf("%s",source);
             printf("ENTER DESTINATION:-");
             scanf("%s",dest);
+            toLowerCase(source);
+            toLowerCase(dest);
             int x=-1,y=-1;
             x=find_area_index(source);
             y=find_area_index(dest);
