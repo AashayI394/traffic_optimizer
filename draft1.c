@@ -257,10 +257,10 @@ void rev(int* arr,int ct){
     return;
 }
 
-void findroute(graph g,int s,int d,arr* tpath);
+void findroute(graph g,int s,int d,arr* tpath, int msource);
 int find_area_index(char s[]);
 
-void adjacent(graph g,int index,int d,arr* tpath){
+void adjacent(graph g,int index,int d,arr* tpath, int msource){
     printf("PROBABLY YOU ARE IN THESE AREAS\n");
     for(int i=0;i<17;i++){
         if(g.matrix[i][index].distance){
@@ -271,11 +271,11 @@ void adjacent(graph g,int index,int d,arr* tpath){
     printf("\nWhere are you\n");
     scanf("%s",s);
     tpath->A[tpath->length++]=find_area_index(s);
-    findroute(g,find_area_index(s),d,tpath);
+    findroute(g,find_area_index(s),d,tpath, msource);
 
 }
-
-void findroute(graph g,int s,int d,arr* tpath){
+int find_time(graph* g,int sol[],int sindex,int dindex,int *h,int* m);
+void findroute(graph g,int s,int d,arr* tpath, int msource){
      int sol[100];
      int diffpath[30];
 
@@ -294,19 +294,34 @@ void findroute(graph g,int s,int d,arr* tpath){
     i=1;
 
     while(c==1){
+        
         if(i==ct){
-            printf("\nYOU HAVE REACHED YOUR DESTINATION\n");
+            // find_time1();
+            //printf("\nYOU HAVE REACHED YOUR DESTINATION\n");
             break;
         }
         printf("\nHave You reached %s?(1 for Yes/0 for No)\n",areas[sol[i++]]);
         fflush(stdin);
         scanf("%d",&c);
         if(c==0){
-            adjacent(g,sol[i-2],d,tpath);
+            adjacent(g,sol[i-2],d,tpath, msource);
             return;
         }
         if(c==1){
             tpath->A[tpath->length++]=sol[i-1];
+            printf("%s ",areas[msource]);
+            if (g.matrix[msource][tpath->A[0]].intensity <= 2){
+                printf("\x1b[1;34m--%d-->\x1b[0m",g.matrix[msource][tpath->A[0]].distance);
+                // sleep(1);
+                }
+                else if (g.matrix[msource][tpath->A[0]].intensity>=3 && g.matrix[msource][tpath->A[0]].intensity <= 4){
+                    printf("\x1b[1;33m--%d-->\x1b[0m",g.matrix[msource][tpath->A[0]].distance);
+                    // sleep(2);
+                }
+                else{
+                    printf("\x1b[1;31m--%d-->\x1b[0m",g.matrix[msource][tpath->A[0]].distance);
+                    // sleep(3);
+                }
             for(int i=0;i<tpath->length;i++){
                 //printf("HERE%d\n",tpath->length);
                 if(tpath->length==1){
@@ -332,6 +347,7 @@ void findroute(graph g,int s,int d,arr* tpath){
                 printf("%s ",areas[tpath->A[i]]);
                 
             }
+            printf("\n");
         }
     }
     //disp(&g);
@@ -381,6 +397,26 @@ int find_time(graph* g,int sol[],int sindex,int dindex,int *h,int* m){
     }
     eta(h,m,g->matrix[sol[j]][dindex].distance,g->matrix[sol[j]][dindex].intensity);
     printf("t=%d %d\n",*h,*m);
+}
+
+void printtime(int h,int m) {
+    if(m < 10) {
+        printf("\t%d : 0%d\t",h,m);
+    }
+    else printf("\t%d : %d\t",h,m);
+}
+
+void find_time1(graph* g,int sol[],int sindex,int dindex,int *h,int* m) {
+    eta(h,m,g->matrix[sindex][sol[0]].distance,g->matrix[sindex][sol[0]].intensity);
+    printtime(*h,*m);
+    int j=0;
+    while(sol[j+1]!=-1){
+        eta(h,m,g->matrix[sol[j]][sol[j+1]].distance,g->matrix[sol[j]][sol[j+1]].intensity);
+        printtime(*h,*m);
+        j++;
+    }
+    eta(h,m,g->matrix[sol[j]][dindex].distance,g->matrix[sol[j]][dindex].intensity);
+    printtime(*h,*m);
 }
 
 // void printentirepath(int sol[],int f,int sindex,int dindex){
@@ -440,7 +476,7 @@ void journeyPlanning(graph* g) {
         tpath.A[i]=-1;
     }
     if (numStops == 0) {
-        findroute(*g,find_area_index(source),find_area_index(destination),&tpath);
+        findroute(*g,find_area_index(source),find_area_index(destination),&tpath, sindex);
         
         return;
     }
@@ -501,14 +537,16 @@ void journeyPlanning(graph* g) {
         int currentLocation = find_area_index(source);
         for (int i = 0; i < numStops; i++) {
         //dijkstra(g->matrix, currentLocation, stops[i]);
-            findroute(*g,currentLocation,stops[i],&tpath);
+            findroute(*g,currentLocation,stops[i],&tpath,sindex);
             currentLocation = stops[i];
         }
-        findroute(*g,stops[numStops-1],dindex,&tpath);
-        for(int i=0;i<tpath.length;i++){
-            printf("%d ",tpath.A[i]);
-        }
-        find_time(g,tpath.A,sindex,dindex,&h,&m);
+        findroute(*g,stops[numStops-1],dindex,&tpath,sindex);
+        // for(int i=0;i<tpath.length;i++){
+        //     printf("%d ",tpath.A[i]);
+        // }
+        printf("\n");
+        find_time1(g,tpath.A,sindex,dindex,&h,&m);
+        printf("\nYou Have Reached Your Destination :)\n");
         printf("\nETA=%d:%d\n",h,m);
         rev(tpath.A,tpath.length);
         printf("\n");
@@ -589,9 +627,12 @@ int main(){
                     sol[i]=-1;
                 }
                 dijkstra((g.matrix), x,y,sol);
-                printf("TOTAL DISTANCE=%d\n",finddistance(&g,sol,x,y));
-                find_time(&g,sol,x,y,&t,&min);
-                printf("ETA=%d %d\n",t,min);
+                int temp=finddistance(&g,sol,x,y);
+                
+                find_time1(&g,sol,x,y,&t,&min);
+                printf("\nETA=%d %d\n",t,min);
+                printf("TOTAL DISTANCE=%d\n",temp);
+                
                 }
         }
         else if(c==3){
