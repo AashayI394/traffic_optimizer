@@ -386,6 +386,7 @@ int finddistance(graph* g, int sol[], int sindex, int dindex) { //O(v)
         sol[i]=sol[cnt-i-1];
         sol[cnt-i-1]=t;
     }
+    //printf("JJJ");
     int ans= g->matrix[sindex][sol[0]].distance;
     while(sol[j+1]!=-1) {
         //printf("HERE");
@@ -586,12 +587,12 @@ void journeyPlanning(graph* g) {   //O(n^3)
 }
 
 void printadj(graph* g,int x){
-    printf("\nYOU CAN GO HETRE\n");
+    printf("\n\nYOU CAN GO HERE\n");
     for(int i=0;i<17;i++){
         if(g->matrix[i][x].distance)
             printf("%s\t",areas[i]);
     }
-    printf("\n");
+    printf("\n\n");
 }
 
 void freeroam(graph g){
@@ -602,11 +603,17 @@ void freeroam(graph g){
     int s=find_area_index(source);
     int f=s;
     arr tpath;
+    for(int i=0;i<100;i++){
+        tpath.A[i]=-1;
+    }
     tpath.length=0;
     tpath.A[tpath.length++]=s;
+    int ans=0;
     while(1){
+        //printf("here");
         printadj(&g,s);
         printf("ENTER NEXT AREA(ENTER -1 to exit)\n");
+        
         scanf("%s",source);
         toupperCase(source);
         s=find_area_index(source);
@@ -616,6 +623,8 @@ void freeroam(graph g){
         tpath.A[tpath.length++]=s;
         //printf("%d",tpath.length);
         printf("\n");
+        //printf("%d",tpath.length);
+        ans+=g.matrix[tpath.A[tpath.length-1]][tpath.A[tpath.length-2]].distance;
         for(int i=0;i<tpath.length;i++){
                 if(tpath.length==1){
                     printf("%s ",areas[tpath.A[i]]);
@@ -623,6 +632,7 @@ void freeroam(graph g){
                 }
                 if(i==0){
                     printf("%s ",areas[tpath.A[i]]);
+                    
                     continue;
                 }
                 if (g.matrix[tpath.A[i-1]][tpath.A[i]].intensity <= 2){
@@ -638,8 +648,10 @@ void freeroam(graph g){
                     // sleep(3);
                 }
                 printf("%s ",areas[tpath.A[i]]);
+                
         }
-        printf("TOTAL DIST COVERED=%d",finddistance(&g,tpath.A,f,tpath.A[tpath.length-1]));
+        printf("\n\nDistance Covered=%d ",ans);
+        
     }
 }
 
@@ -652,7 +664,8 @@ int main(){
         printf("\n1)\tSHOW AREAS\n\n");
         printf("2)\tFIND ROUTE\n\n");
         printf("3)\tJOURNEY PLANNER\n\n");
-        printf("4)\tEXIT\n\n");
+        printf("4)\tFREE_ROAM\n\n");
+        printf("5)\tEXIT\n\n");
         int c;
         printf("ENTER CHOICE\n");
         scanf("%d",&c);
@@ -717,11 +730,11 @@ int main(){
 
             journeyPlanning(&g);
         }
-        else if(c==5){
+        else if(c==4){
 
             freeroam(g);
         }
-        else if(c==4)
+        else if(c==5)
         {
             break;
         }
